@@ -8,11 +8,22 @@ const CancelToken = axios.CancelToken;
 export { baseUrl };
 // axios.defaults.withCredentials = true;
 // 添加请求拦截器
+// 添加请求拦截器
 axios.interceptors.request.use(function (config) {
     // 在发送请求之前做些什么 传token
     let token = localStorage.getItem("token");
-    config.headers.common['Content-Type'] = "application/json;charset=utf-8";
-    config.headers.common['token'] = token;  //Authorization
+
+    // 1. 确保 headers 对象存在
+    config.headers = config.headers || {}; 
+
+    // 2. 直接修改 headers，不要用 .common
+    config.headers['Content-Type'] = "application/json;charset=utf-8";
+    
+    // 3. 只有当 token 存在时才添加，避免传 null 字符串
+    if (token) {
+        config.headers['token'] = token; 
+    }
+    
     return config;
 }, function (error) {
     // 对请求错误做些什么

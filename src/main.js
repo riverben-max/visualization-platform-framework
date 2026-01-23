@@ -14,12 +14,14 @@ import App from './App'
 import store from './store'
 import router from './router'
 
-// import * as DataV from '@dataview/datav-vue3';
+// DataV 组件库按需导入，不需要全局注册
+import DataVVue3 from '@kjgl77/datav-vue3'
 
 import Echart from './components/echart/index.vue'
 import ItemWrap from './components/item-wrap/item-wrap.vue'
 import Message from './components/message/message.vue'
 import Reacquire from './components/reacquire/reacquire.vue'
+
 // import Messages from './components/message/message'
 
 
@@ -39,7 +41,7 @@ import { parseTime, resetForm, addDateRange, handleTree, selectDictLabel, select
 
 const app = createApp(App)
 
-// app.use(DataV, { classNamePrefix: 'dv-' });
+app.use(DataVVue3)
 
 // 全局方法挂载
 // app.config.globalProperties.useDict = useDict

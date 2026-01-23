@@ -21,7 +21,7 @@
 </template>
 
 <script>
-import { BorderBox13 } from '@dataview/datav-vue3';
+import { BorderBox13 } from '@kjgl77/datav-vue3';
 export default {
   components: {
     BorderBox13

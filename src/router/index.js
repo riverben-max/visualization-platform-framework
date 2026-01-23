@@ -24,24 +24,25 @@ import { createWebHistory, createRouter } from 'vue-router'
  */
 
 // 公共路由
+// 公共路由
 export const constantRoutes = [
   {
     path: '/',
-    redirect: '/index',
-  },
-  {
-    path: '/home',
-    name: 'home',
+    // 1. 让 Home 组件直接接管根路径
     component: () => import(/* webpackChunkName: "LSD.bighome" */ '../views/home.vue'),
-    children:[
+    redirect: '/index', // 2. 访问域名直接重定向到 /index
+    children: [
       {
-        path: '/index',
+        // 3. 重点：去掉前面的斜杠，变成相对路径 'index'
+        // 这样访问 /index 时，会先加载父组件 Home，再加载子组件 Index
+        path: 'index', 
         name: 'index',
         component: () => import(/* webpackChunkName: "LSD.bighome" */ '../views/indexs/index.vue'),
       }
     ]
-  }, 
-  // 以下路由需放在最后，如需添加路由请在上方添加
+  },
+  
+  // 404 路由保持不变
   {
     path: "/:pathMatch(.*)*",
     component: () => import('@/views/error/404'),

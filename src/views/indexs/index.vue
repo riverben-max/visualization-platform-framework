@@ -1,32 +1,52 @@
 <template>
-  <div class="contents">
-    <div class="contetn_left">
-      <div class="pagetab"></div>
-      <ItemWrap class="contetn_left-top contetn_lr_item" title="能耗总览">
-
+  <div class="contents" style="display: flex; justify-content: space-between; padding: 10px; width: 100%; height: 100vh; box-sizing: border-box; background: #0b1126;">
+    
+    <div class="contetn_left" style="width: 28%; display: flex; flex-direction: column; height: 100%;">
+      
+      <ItemWrap class="contetn_lr_item" title="能耗总览" style="height: 32%; margin-bottom: 15px;">
+        <LeftTop />
       </ItemWrap>
-      <ItemWrap class="contetn_left-center contetn_lr_item" title="能耗占比">
+      
+      <ItemWrap class="contetn_lr_item" title="能耗占比" style="height: 32%; margin-bottom: 15px;">
         <LeftCenter />
       </ItemWrap>
-      <ItemWrap class="contetn_left-bottom contetn_lr_item" title="库存预警" style="padding: 0 10px 16px 10px">
+      
+      <ItemWrap class="contetn_lr_item" title="库存预警" style="height: 32%;">
+        </ItemWrap>
+    </div>
 
+    <div class="contetn_center" style="width: 42%; display: flex; flex-direction: column; height: 100%;">
+      
+      <ItemWrap class="contetn_lr_item" title="数据总览" style="height: 63%; margin-bottom: 15px;">
+         </ItemWrap>
+      
+      <ItemWrap class="contetn_lr_item" title="销售计划" style="height: 35%;">
+         </ItemWrap>
+    </div>
+
+    <div class="contetn_right" style="width: 28%; display: flex; flex-direction: column; height: 100%;">
+      
+      <ItemWrap class="contetn_lr_item" title="销售统计" style="height: 32%; margin-bottom: 15px;">
+      </ItemWrap>
+      
+      <ItemWrap class="contetn_lr_item" title="销售排名（TOP8）" style="height: 32%; margin-bottom: 15px;">
+      </ItemWrap>
+      
+      <ItemWrap class="contetn_lr_item" title="生产统计构成" style="height: 32%;">
       </ItemWrap>
     </div>
-    <div class="contetn_center">
 
-    </div>
-    <div class="contetn_right">
-
-    </div>
   </div>
 </template>
 
 <script>
 import LeftCenter from "./left-center.vue";
+import LeftTop from "./left-top.vue";
 
 export default {
   components: {
-    LeftCenter
+    LeftCenter,
+    LeftTop
   },
   data() {
     return {
