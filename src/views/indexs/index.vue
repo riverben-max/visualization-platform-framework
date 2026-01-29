@@ -12,7 +12,8 @@
       </ItemWrap>
       
       <ItemWrap class="contetn_lr_item" title="库存预警" style="height: 32%;">
-        </ItemWrap>
+        <LeftBottom/>
+      </ItemWrap>
     </div>
 
     <div class="contetn_center" style="width: 42%; display: flex; flex-direction: column; height: 100%;">
@@ -42,11 +43,13 @@
 <script>
 import LeftCenter from "./left-center.vue";
 import LeftTop from "./left-top.vue";
+import LeftBottom from "./left-bottom.vue"
 
 export default {
   components: {
     LeftCenter,
-    LeftTop
+    LeftTop,
+    LeftBottom
   },
   data() {
     return {
