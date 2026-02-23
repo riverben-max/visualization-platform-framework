@@ -19,21 +19,26 @@
     <div class="contetn_center" style="width: 42%; display: flex; flex-direction: column; height: 100%;">
       
       <ItemWrap class="contetn_lr_item" title="数据总览" style="height: 63%; margin-bottom: 15px;">
-         </ItemWrap>
+        <CenterTop/>
+      </ItemWrap>
       
       <ItemWrap class="contetn_lr_item" title="销售计划" style="height: 35%;">
-         </ItemWrap>
+        <CenterBottom/>
+      </ItemWrap>
     </div>
 
     <div class="contetn_right" style="width: 28%; display: flex; flex-direction: column; height: 100%;">
       
       <ItemWrap class="contetn_lr_item" title="销售统计" style="height: 32%; margin-bottom: 15px;">
+        <RightTop/>
       </ItemWrap>
       
       <ItemWrap class="contetn_lr_item" title="销售排名（TOP8）" style="height: 32%; margin-bottom: 15px;">
+        <RightCenter/>
       </ItemWrap>
       
       <ItemWrap class="contetn_lr_item" title="生产统计构成" style="height: 32%;">
+        <RightBottom/>
       </ItemWrap>
     </div>
 
@@ -44,12 +49,22 @@
 import LeftCenter from "./left-center.vue";
 import LeftTop from "./left-top.vue";
 import LeftBottom from "./left-bottom.vue"
+import CenterTop from "./center-top.vue"
+import RightTop from "./right-top.vue"
+import CenterBottom from "./center-bottom.vue"
+import RightCenter from "./right-center.vue"
+import RightBottom from "./right-bottom.vue"
 
 export default {
   components: {
     LeftCenter,
     LeftTop,
-    LeftBottom
+    LeftBottom,
+    CenterTop,
+    RightTop,
+    CenterBottom,
+    RightCenter,
+    RightBottom
   },
   data() {
     return {

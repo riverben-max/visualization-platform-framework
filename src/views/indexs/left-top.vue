@@ -58,11 +58,11 @@ export default {
   created() {
     this.getData();
     // 先设置测试数据，验证组件是否能正常显示
-    console.log('组件创建，初始配置：', this.powerConsumeCfg);
+    //console.log('组件创建，初始配置：', this.powerConsumeCfg);
   },
   methods: {
     getData() {
-      console.log('开始获取数据...');
+      //console.log('开始获取数据...');
       currentGET('big2').then(res => {
         // 在 getData 方法中
         if (res.code == 200) {
@@ -75,7 +75,7 @@ export default {
           // 检查一下取值逻辑
           let carbonEmission = Number(emissionOverview.totalCarbonEmission || 0);
 
-          console.log('数值检查:', { powerConsume, wateConsume, carbonEmission });
+          //console.log('数值检查:', { powerConsume, wateConsume, carbonEmission });
 
           // 2. 更新配置
           this.powerConsumeCfg = {

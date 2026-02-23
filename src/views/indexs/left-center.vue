@@ -1,6 +1,6 @@
-<template>
+﻿<template>
   <div class="left_center_inner">
-    <Echart v-if="pageflag" id="leftCenter" :options="options" ref="chartRef" />
+    <div v-if="pageflag" id="leftCenter" ref="chartRef"></div>
     <Reacquire v-else @click="getData" style="line-height: 200px">
       重新获取
     </Reacquire>
@@ -9,12 +9,14 @@
 
 <script setup>
 import { ref, reactive, onMounted, onBeforeUnmount, nextTick } from 'vue';
+import * as echarts from 'echarts';
 import { currentGET } from '@/api/modules';
 
 // --- 响应式数据 ---
 const pageflag = ref(true);
 const options = ref({});
 const chartRef = ref(null);
+const chartInstance = ref(null);
 const timer = ref(null);
 
 const consumeData = reactive({
@@ -34,7 +36,7 @@ const initChart = () => {
     consumeData.totalWaterConsume +
     consumeData.totalOfficeWaterConsume;
   const colors = ["#ECA444", "#33A1DB", "#56B557", "#c66863"];
-  console.log(consumeData);
+  //console.log(consumeData);
   
 
 
@@ -82,12 +84,10 @@ const initChart = () => {
           }
         },
         labelLine: {
-
           length: 20,
           length2: 36,
           show: true
         },
-
       }
     ],
 
@@ -130,6 +130,18 @@ const initChart = () => {
       },
     },
   }
+};
+
+const renderChart = () => {
+  if (!chartRef.value) return;
+  if (chartInstance.value && chartInstance.value.getDom() !== chartRef.value) {
+    chartInstance.value.dispose();
+    chartInstance.value = null;
+  }
+  if (!chartInstance.value) {
+    chartInstance.value = echarts.init(chartRef.value);
+  }
+  chartInstance.value.setOption(options.value, true);
 };
 /* options.value = {
     title: {
@@ -226,6 +238,7 @@ const getData = async () => {
       initChart();
 
       nextTick(() => {
+        renderChart();
         switper();
       });
     } else {
@@ -243,8 +256,10 @@ const switper = () => {
   const autoTime = 3000;
   timer.value = setInterval(looper, autoTime);
 
-  const myChart = chartRef.value?.chart;
+  const myChart = chartInstance.value;
   if (myChart) {
+    myChart.off('mouseover');
+    myChart.off('mouseout');
     myChart.on('mouseover', () => {
       clearInterval(timer.value);
       timer.value = null;
@@ -261,11 +276,20 @@ onMounted(() => {
 
 onBeforeUnmount(() => {
   if (timer.value) clearInterval(timer.value);
+  if (chartInstance.value) {
+    chartInstance.value.dispose();
+    chartInstance.value = null;
+  }
 });
 </script>
 
 <style lang="scss" scoped>
 .left_center_inner {
+  width: 100%;
+  height: 100%;
+}
+
+#leftCenter {
   width: 100%;
   height: 100%;
 }
