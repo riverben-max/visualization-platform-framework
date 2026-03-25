@@ -1,103 +1,112 @@
 <template>
-  <div class="count">
-    <div v-if="pageflag" ref="chartRef" class="center_bottom_inner"></div>
-   
+  <div class="center-bottom">
+    <div ref="chartRef" id="centerBottom" v-if="pageFlag"></div>
   </div>
 </template>
 <script setup>
-
-import { currentGET } from '@/api/modules';
-import { ref } from 'vue';
-import { onMounted, onBeforeUnmount} from 'vue'
+import { nextTick, onBeforeUnmount, onMounted, ref, shallowRef } from 'vue';
 import * as echarts from 'echarts'
+import { currentGET } from '../../api/modules';
 
-const chartRef = ref(null)
-const pageflag = ref(true)
-let chartInstance = null
-const chartData = ref({
+const pageFlag = ref(false)
+const chartRef = ref()
+const chartIntance = shallowRef(null)
+const option = shallowRef({})
+const currentData = ref({
+  barData: [],
   category: [],
-  totalSales: [],
-  contractSales: []
+  lineData: [],
+  rateData: [],
 })
-const getData = async () => {
-  const res = await currentGET('big4')
-  //console.log(res);
-  if(!res?.success){
-    pageflag.value = false
-    return
-  }
-  const data = res.data || {}
-  chartData.value = {
-      category: data.dateList || [],
-      totalSales: data.numList || [],
-      contractSales: data.numList2 || []
-    }
-
-    // 3️⃣ 用新数据生成图表
-    initChart()
-}
 
 const initChart = () => {
-  if (chartInstance) {
-    chartInstance.dispose()
-  }
+  option.value = {
 
-  // 创建新的图表实例
-  chartInstance = echarts.init(chartRef.value)
+    tooltip: {
+      trigger: 'axis'
+    },
+    grid: {
+      left: '3%',
+      right: '4%',
+      bottom: '3%',
+      containLabel: true
+    },
 
-  const labelsAxis = chartData.value.category
-  const totalSalesList = chartData.value.totalSales
-  const contractSalesList = chartData.value.contractSales
+    xAxis: {
+      type: 'category',
+      boundaryGap: true,
+      data: currentData.value.category
+    },
+    yAxis: [{
+      name: '销售数量',
+      splitLine: {
+        show: false
+      },
+      type: 'value'
+    },
+    {
+      name: '完成率',
+      type: 'value'
+    }
+    ],
+    series: [
+      {
+        name: '完成率',
+        yAxisIndex: '1',
+        type: 'line',
+        data: currentData.value.rateData
+      },
+      {
+        name: '已销售',
+        type: 'bar',
+        data: currentData.value.barData
+      },
+      {
+        name: '计划销售',
+        type: 'bar',
+        data: currentData.value.lineData
+      },
 
-  const options = {
-    tooltip:{
-      trigger:'axis'
-    },
-    grid:{
-      left:'3%',
-      right:'4%',
-      bottom:'3%',
-      containLabel:true,
-    },
-    xAxis:{
-      type:'category',boundaryGap:false,data:labelsAxis
-    },
-    yAxis:{
-      type:'value',name:'销售额',splitLine: { lineStyle: { color: 'rgba(255,255,255,0.08)' } }
-    },
-    series:[
-      {name:'总销售额',type:'line',smooth:'true',data:totalSalesList},
-      {name:'合同额',type:'line',smooth:'true',data:contractSalesList}
     ]
-    
-
-  }  
-  chartInstance.setOption(options)
-
-  // 响应式调整大小
-  const handleResize = () => {
-    chartInstance?.resize()
-  }
-  window.addEventListener('resize', handleResize)
-
-  
+  };
 }
-  
+const renderChart = () => {
+  if (!chartRef.value) return
+  if (!chartIntance.value) {
+    chartIntance.value = echarts.init(chartRef.value)
+  }
+  chartIntance.value.setOption(option.value, true)
+}
+const getData = async () => {
+  const res = await currentGET('big6')
+  if (!res || !res.data) return
+  const data = res.data
+  currentData.value.barData = data.barData
+  currentData.value.category = data.category
+  currentData.value.lineData = data.lineData
+  currentData.value.rateData = data.rateData
+  initChart()
+  pageFlag.value = true
+  nextTick(() => {
+    renderChart()
+  })
+}
 onMounted(() => {
-
   getData()
 })
 onBeforeUnmount(() => {
-  window.removeEventListener('resize', handleResize)
-  chartInstance?.dispose()
-  chartInstance = null
+  chartIntance.value?.dispose()
+  chartIntance.value = null
 })
-
-
 </script>
 <style scoped>
-.center_bottom_inner{
+.center-bottom {
+  height: 100%;
   width: 100%;
-  height: 290px;
+}
+
+#centerBottom {
+  height: 100%;
+  width: 100%;
 }
 </style>

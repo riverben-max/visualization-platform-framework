@@ -1,190 +1,113 @@
 <template>
-  <div class="right-center-inner">
-    <div v-if="pageFlag" ref="chartRef" class="chart-box"></div>
-    <div v-else class="empty-text">暂无数据</div>
+  <div class="right-center">
+    <div class="box" ref="chartRef" v-if="pageFlag"></div>
   </div>
 </template>
 
 <script setup>
-import { onMounted, onBeforeUnmount, ref, nextTick } from 'vue';
-import * as echarts from 'echarts';
-import { currentGET } from '@/api/modules';
+import { nextTick, onBeforeUnmount, onMounted, ref, shallowRef } from 'vue';
+import * as echarts from 'echarts'
+import { currentGET } from '../../api/modules';
 
-const pageFlag = ref(true);
-const chartRef = ref(null);
-let myChart = null;
+const pageFlag = ref(false)
+const chartRef = ref({})
+const chartInstance = shallowRef(null)//！！！
+const option = shallowRef({})
 
-const chartData = ref({
-  names: [],
-  values: []
-});
-
-const toNumber = (value) => {
-  const num = Number(value);
-  return Number.isFinite(num) ? num : 0;
-};
-
-const formatNumber = (value) => {
-  const num = Number(value);
-  if (!Number.isFinite(num)) return '--';
-  return num.toLocaleString();
-};
+const currentData = ref({})
 
 const initChart = () => {
-  if (!chartRef.value) return;
-  if (!chartRef.value.clientWidth || !chartRef.value.clientHeight) return;
-
-  if (!myChart) {
-    myChart = echarts.init(chartRef.value);
-  }
-
-  const colors = [
-    '#3ba1ff',
-    '#4fd97f',
-    '#f6bd16',
-    '#f58b3c',
-    '#8b7bff',
-    '#2ec7c9',
-    '#ff6b6b',
-    '#7bd8ff'
-  ];
-
-  myChart.setOption(
-    {
-      grid: {
-        left: 100,
-        right: 50,
-        top: 20,
-        bottom: 24,
-        containLabel: true
-      },
-      tooltip: {
-        trigger: 'axis',
-        axisPointer: { type: 'shadow' },
-        formatter: (params) => {
-          const item = params?.[0];
-          if (!item) return '';
-          return `${item.name}<br/>销售额：${formatNumber(item.value)}`;
-        }
-      },
-      xAxis: {
-        name: '销售额',
-        type: 'value',
-        axisLine: { lineStyle: { color: 'rgba(255,255,255,0.3)' } },
-        axisLabel: { color: '#cfe6ff' },
-        splitLine: { lineStyle: { color: 'rgba(255,255,255,0.08)' } }
-      },
-      yAxis: {
-        type: 'category',
-        inverse: true,
-        data: chartData.value.names,
-        axisTick: { show: false },
-        axisLine: { lineStyle: { color: 'rgba(255,255,255,0.2)' } },
-        axisLabel: { color: '#fff' }
-      },
-      series: [
-        {
-          name: '销售排名',
-          type: 'bar',
-          barWidth: 14,
-          data: chartData.value.values,
-          itemStyle: {
-            color: (params) => colors[params.dataIndex % colors.length],
-            borderRadius: [0, 4, 4, 0]
-          },
-          label: {
-            show: true,
-            position: 'right',
-            color: '#fff',
-            formatter: (params) => formatNumber(params.value)
-          }
-        }
-      ]
+  option.value = {
+    grid: {
+      left: 0,
+      right: 60,
+      top: 30,
+      bottom: 10,
+      containLabel: true
     },
-    true
-  );
-};
+    tooltip: {
+      trigger: 'axis',
+      axisPointer: {
+        type: 'shadow'
+      }
+    },
+    xAxis: {
+      name: '销售额',
+      type: 'value',
+      boundaryGap: [0, 0.01],
+      axisLabel: {          // ← 添加这个配置
+        color: '#fff'    // 设置 x 轴刻度标签的颜色（红色）
+      }
+    },
+    yAxis: {
+      name: '销售公司名称',
+      type: 'category',
+      data: currentData.value.names,
+      axisLabel: {          // ← 添加这个配置
+        color: '#fff'    // 设置 x 轴刻度标签的颜色（红色）
+      }
+    },
+    series: [
+      {
+        name: '销量',
+        type: 'bar',
+        data: currentData.value.values,
+        itemStyle: {
+          color: (params) => {
+            const colors = ['#5470C6', '#91CC75', '#FAC858', '#EE6666', '#73C0DE', '#3BA272']
+            return colors[params.dataIndex % colors.length]
+          }
+        },
+        label: {
+          show: true,
+          position: 'right',
+          color: '#fff'
+        }
+      }
+    ]
+  };
+}
 
-const renderChartWhenReady = async () => {
-  await nextTick();
-  requestAnimationFrame(() => {
-    initChart();
-    myChart?.resize();
-  });
-};
+const renderChart = () => {
+  if (!chartRef.value) return
+  if (!chartInstance.value) {
+    chartInstance.value = echarts.init(chartRef.value)
+  }
+  chartInstance.value.setOption(option.value, true)
+}
 
 const getData = async () => {
-  try {
-    const res = await currentGET('big7');
-    console.log('big7 res:', res);
+  const res = await currentGET('big7')
 
-    if (!res?.success || !Array.isArray(res.data)) {
-      pageFlag.value = false;
-      return;
-    }
-
-    const list = res.data
-      .map((item) => ({
-        name: item?.name || '--',
-        value: toNumber(item?.value)
-      }))
-      .sort((a, b) => b.value - a.value)
-      .slice(0, 8);
-
-    if (!list.length) {
-      pageFlag.value = false;
-      return;
-    }
-
-    chartData.value = {
-      names: list.map((item) => item.name),
-      values: list.map((item) => item.value)
-    };
-
-    pageFlag.value = true;
-    await renderChartWhenReady();
-  } catch (error) {
-    console.error('sale ranking fetch error:', error);
-    pageFlag.value = false;
+  if (!res || !res.data) return
+  const list = res.data.sort((a, b) => a.value - b.value)
+  currentData.value = {//!!
+    names: list.map(item => item.name),
+    values: list.map(item => item.value)
   }
-};
 
-const handleResize = () => {
-  myChart?.resize();
-};
+  initChart()
+  pageFlag.value = true//!!
+  nextTick(() => {
+    renderChart()
+  })
+}
 
 onMounted(() => {
-  getData();
-  window.addEventListener('resize', handleResize);
-});
-
+  getData()
+})
 onBeforeUnmount(() => {
-  window.removeEventListener('resize', handleResize);
-  if (myChart) {
-    myChart.dispose();
-    myChart = null;
-  }
-});
+  chartInstance.value?.dispose()
+})
 </script>
-
-<style lang="scss" scoped>
-.right-center-inner {
-  width: 100%;
+<style scoped>
+.right-center {
   height: 100%;
+  width: 100%;
 }
 
-.chart-box {
-  width: 100%;
+.box {
   height: 100%;
-}
-
-.empty-text {
   width: 100%;
-  height: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #8aa6c7;
-  font-size: 14px;
 }
 </style>

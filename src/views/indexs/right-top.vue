@@ -1,80 +1,94 @@
 <template>
-  <div class="count">
-    <div v-if="pageFlag" ref="chartRef" class="chart-container"></div>
+  <div class="right-top">
+    <div id="rightTop" ref="chartRef" v-if="pageFalg"></div>
   </div>
 </template>
-
-<script setup name="custom">
-import { ref, onMounted, onBeforeUnmount } from 'vue'
-import { currentGET } from '../../api/modules'
+<script setup>
+import { nextTick, onBeforeUnmount, onMounted, ref, shallowRef } from 'vue';
 import * as echarts from 'echarts'
+import { currentGET } from '../../api/modules';
 
-const pageFlag = ref(true)
-const chartRef = ref(null)
-let chartInstance = null
+const chartRef = ref()
+const chartIntance = shallowRef(null)
+const option = shallowRef({})
+const pageFalg = ref(false)
 
-const chartData = ref({
-  category: [],
-  barData: [],
-  lineData: [],
-  rateData: []
+const currentData = ref({
+  dateList: [],
+  numList: [],
+  numList2: [],
+
 })
 
-const handleResize = () => {
-  chartInstance?.resize()
+const initChart = () => {
+  option.value = {
+    tooltip: {
+      trigger: 'axis',
+    },
+    grid: {
+      left: '3%',
+      right: '4%',
+      bottom: '3%',
+      containLabel: true
+    },
+    xAxis: {
+      type: 'category',
+      boundaryGap: false,
+      data: currentData.value.dateList
+    },
+    yAxis: [
+      {
+        type: 'value',
+        name: '销售额',
+        splitLine: { lineStyle: { color: 'rgba(255,255,255,0.08)' } }
+      },
+      {
+        type: 'value',
+        name: '合同额',
+        splitLine: {
+          show: false
+        }
+      }],
+    series: [
+      {
+        name: '总销售额（万）',
+        type: 'line',
+        yAxisIndex: 0,
+        smooth: true,
+        data: currentData.value.numList
+      },
+      {
+        name: '合同额（万）',
+        type: 'line',
+        yAxisIndex: 1,
+        smooth: true,
+        data: currentData.value.numList2
+      },
+
+    ]
+  };
 }
 
-const initChart = () => {
+const renderChart = () => {
   if (!chartRef.value) return
-
-  if (!chartInstance) {
-    chartInstance = echarts.init(chartRef.value)
-    window.addEventListener('resize', handleResize)
+  if (!chartIntance.value) {
+    chartIntance.value = echarts.init(chartRef.value)
   }
-
-  const labelsAxis = chartData.value.category
-  const soldQtyList = chartData.value.barData
-  const planQtyList = chartData.value.lineData
-  const ratePercentList = chartData.value.rateData
-
-  const options = {
-    tooltip: { trigger: 'axis', axisPointer: { type: 'cross' } },
-    legend: { data: ['已销售', '计划销售', '完成率'] },
-    grid: { left: 36, right: 46, top: 40, bottom: 26, containLabel: true },
-    color: ['#4c9bfd', '#f6bd16', '#56b557'],
-    xAxis: { type: 'category', data: labelsAxis },
-    yAxis: [
-      { type: 'value', name: '销售数量', splitLine: { lineStyle: { color: 'rgba(255,255,255,0.08)' } } },
-      { type: 'value', name: '完成率(%)', min: 0, max: 100, splitLine: { show: false } }
-    ],
-    series: [
-      { name: '已销售', type: 'bar', itemStyle: { borderRadius: [4, 4, 0, 0] }, data: soldQtyList },
-      { name: '计划销售', type: 'bar', itemStyle: { borderRadius: [4, 4, 0, 0] }, data: planQtyList },
-      { name: '完成率', type: 'line', yAxisIndex: 1, smooth: true, symbolSize: 6, lineStyle: { width: 2 }, data: ratePercentList }
-    ]
-  }
-
-  chartInstance.setOption(options, true)
+  chartIntance.value.setOption(option.value, true)
 }
 
 const getData = async () => {
-  const res = await currentGET('big6')
-  console.log(res);
-  
-  if (!res?.success) {
-    pageFlag.value = false
-    return
-  }
-
-  const data = res.data || {}
-  chartData.value = {
-    category: Array.isArray(data.category) ? data.category : [],
-    barData: Array.isArray(data.barData) ? data.barData : [],
-    lineData: Array.isArray(data.lineData) ? data.lineData : [],
-    rateData: Array.isArray(data.rateData) ? data.rateData : []
-  }
-
+  const res = await currentGET('big4')
+  if (!res || !res.data) return
+  const data = res.data
+  currentData.value.dateList = data.dateList
+  currentData.value.numList = data.numList
+  currentData.value.numList2 = data.numList2
+  pageFalg.value = true
   initChart()
+  nextTick(() => {
+    renderChart()
+  })
 }
 
 onMounted(() => {
@@ -82,16 +96,19 @@ onMounted(() => {
 })
 
 onBeforeUnmount(() => {
-  window.removeEventListener('resize', handleResize)
-  chartInstance?.dispose()
-  chartInstance = null
+  chartIntance.value?.dispose()
+  chartIntance.value = null
 })
 </script>
 
-
 <style scoped>
-.chart-container {
+.right-top {
+  height: 100%;
   width: 100%;
-  height: 290px;
+}
+
+#rightTop {
+  height: 100%;
+  width: 100%;
 }
 </style>
